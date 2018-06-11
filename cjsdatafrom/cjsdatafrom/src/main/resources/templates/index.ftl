@@ -3,28 +3,25 @@
 <head>
     <meta charset="utf-8">
     <title>iview example</title>
-    <link rel="stylesheet" type="text/css" href="/lib/iview.css">
+    <link rel="stylesheet" type="text/css" href="lib/iview.css">
     <script type="text/javascript" src="lib/vue.min.js"></script>
     <script type="text/javascript" src="lib/iview.min.js"></script>
     <script type="text/javascript" src="lib/commonPieOptions.js"></script>
     <script type="text/javascript" src="lib/commonTrendOptions.js"></script>
+    <script type="text/javascript" src="lib/commonNativeHotMapOptions.js"></script>
+    <script type="text/javascript" src="lib/commonJiGuanHotMapOptions.js"></script>
     <script src="lib/axios.min.js"></script>
-    <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
-    <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-gl/echarts-gl.min.js"></script>
-    <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts-stat/ecStat.min.js"></script>
-    <script type="text/javascript"
-            src="http://echarts.baidu.com/gallery/vendors/echarts/extension/dataTool.min.js"></script>
-    <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/china.js"></script>
-    <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/map/js/world.js"></script>
-    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=ZUONbpqGBsYGXNIYHicvbAbM"></script>
-    <script type="text/javascript"
-            src="http://echarts.baidu.com/gallery/vendors/echarts/extension/bmap.min.js"></script>
-    <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/simplex.js"></script>
-
+    <script type="text/javascript" src="lib/echarts/echarts.min.js"></script>
+    <script type="text/javascript" src="lib/echarts-gl/echarts-gl.min.js"></script>
+    <script type="text/javascript" src="lib/echarts/bmap.min.js"></script>
+    <script src="https://api.map.baidu.com/api?v=2.0&ak=sY4SVxUV9vSRulv0bWY1KMOX53a7dPU1"></script>
 </head>
 <body>
+<#-- Vue Render挂载点-->
 <div id="app">
+    <#-- 布局设定  -->
     <div class="layout">
+        <#-- 上传组件 -->
         <Upload
                 multiple
                 type="drag"
@@ -37,9 +34,13 @@
                 <p>点击或者直接拖动待分析到此</p>
             </div>
         </Upload>
+
+        <#--绘图区域-->
         <Layout>
             <Content :style="{margin: '50px 0',padding: '0 50px'}">
+                <#-- 第一行 -->
                 <i-row>
+                    <#--年龄分布图 -->
                     <i-col span="10" offset="1">
                         <Card>
                             <p slot="title">
@@ -52,6 +53,7 @@
                             </div>
                         </Card>
                     </i-col>
+                        <#--专业分布-->
                     <i-col span="10" offset="2">
                         <Card>
                             <p slot="title">
@@ -65,7 +67,10 @@
                         </Card>
                     </i-col>
                 </i-row>
+
+                <#-- 第二行-->
                 <i-row>
+                    <#--完善度-->
                     <i-col span="10" offset="1">
                         <Card style="margin-top: 30px">
                             <p slot="title">
@@ -78,6 +83,7 @@
                             </div>
                         </Card>
                     </i-col>
+                        <#--称号时间分布-->
                     <i-col span="10" offset="2">
                         <Card style="margin-top: 30px">
                             <p slot="title">
@@ -91,16 +97,50 @@
                         </Card>
                     </i-col>
                 </i-row>
+
+                <#-- 第三行 -->
+                <i-row>
+                        <#--单位热力分布-->
+                    <i-col span="20" offset="2">
+                        <Card style="margin-top: 30px">
+                            <p slot="title">
+                                <Icon type="ios-pie"></Icon>
+                                长江学者所在单位热力分布图
+                            </p>
+                            <div class="demo-spin-container">
+                                <div id="mapUnit" style="height: 500px"></div>
+                            </div>
+                        </Card>
+                    </i-col>
+                </i-row>
+
+                <#-- 第四行 -->
+                    <i-row>
+                    <#--籍贯热力分布-->
+                        <i-col span="20" offset="2">
+                            <Card style="margin-top: 30px">
+                                <p slot="title">
+                                    <Icon type="ios-pie"></Icon>
+                                    长江学者籍贯热力分布图
+                                </p>
+                                <div class="demo-spin-container">
+                                    <div id="mapJiGuan" style="height: 500px"></div>
+                                </div>
+                            </Card>
+                        </i-col>
+                    </i-row>
             </Content>
         </Layout>
+        </Layout>
 
+            <#-- 底部footer区域 -->
         <Layout>
             <Content :style="{margin: '50px 0',padding: '0 50px'}">
                 <i-row>
 
                 </i-row>
             </Content>
-            <Footer class="layout-footer-center">卢俊宇[lujunyu@sinosoft.com.cn]</Footer>
+            <Footer class="layout-footer-center">卢俊宇[lujunyu@buaa.edu.cn]</Footer>
         </Layout>
     </div>
 </div>
@@ -110,6 +150,9 @@
     var majorGeom = null
     var infoGeom = null
     var trend = null
+    var mapUnit = null
+    var mapJiGuan = null
+
     new Vue({
         el: '#app',
         data: {
@@ -117,7 +160,9 @@
             ageGeomData: [],
             majorGeomData: [],
             infoGeomData: [],
-            trendData: []
+            trendData: [],
+            nativeGeomData: [],
+            jiGuanGeomData: []
         },
         methods: {
             show: function () {
@@ -146,6 +191,14 @@
                 setTimeout(function () {
                     _this.initTrend()
                     _this.getTrendData()
+                }, 2000)
+                setTimeout(function () {
+                    _this.initNativeGeom()
+                    _this.getNativeGeom()
+                }, 2000)
+                setTimeout(function () {
+                    _this.initJiGuanGeom()
+                    _this.getJiGuanGeom()
                 }, 2000)
             },
             getAgeGeomData: function () {
@@ -260,10 +313,29 @@
                 }
                 option = commonTrendOptions(xAxisData, yAxisData)
                 trend.setOption(option, true)
+            },
+            initMapUnit: function () {
+                var dom = document.getElementById("mapUnit")
+                mapUnit = echarts.init(dom)
+                var option = commonMapOptions()
+                mapUnit.setOption(option, true)
+                var bmapOriginGeo = mapUnit.getModel().getComponent('bmap').getBMap();
+                bmapOriginGeo.addControl(new BMap.MapTypeControl());
+
+            },
+            initMapJiGuan: function () {
+                var dom = document.getElementById("mapJiGuan")
+                mapJiGuan = echarts.init(dom)
+                var option = commonJiGuanMapOptions()
+                mapJiGuan.setOption(option, true)
+                var bmapOriginGeo = mapJiGuan.getModel().getComponent('bmap').getBMap();
+                bmapOriginGeo.addControl(new BMap.MapTypeControl());
+
             }
         },
         mounted: function () {
-
+            this.initMapUnit();
+            this.initMapJiGuan()
         }
     })
 </script>
